@@ -8,20 +8,22 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSymbol = '';
     let currentTimeframe = ''; 
 
+    // Event handler for form submit
     stockForm.addEventListener('submit', (e) => {
         e.preventDefault();
         currentSymbol = symbolInput.value.toUpperCase();
-        
-        
         fetchStockData(currentSymbol, currentTimeframe);
     });
 
+    // Clear data button to reset everything
     clearDataButton.addEventListener('click', () => {
         stockDataDiv.innerHTML = '';
         symbolInput.value = '';
         currentSymbol = '';
+        currentTimeframe = ''; // Reset the timeframe too
     });
 
+    // Event handler for timeframe buttons
     timeButtons.forEach(button => {
         button.addEventListener('click', () => {
             currentTimeframe = button.id;
@@ -31,34 +33,44 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Fetch stock data based on symbol and timeframe
     function fetchStockData(symbol, timeframe) {
-        stockDataDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-    
-        let functionType = '';
-        let additionalParams = '';
-    
-        switch (timeframe) {
-            case 'intraday':
-                functionType = 'TIME_SERIES_INTRADAY';
-                additionalParams = '&interval=5min'; // You can change the interval to 5min, 15min, etc.
-                break;
-            case 'daily':
-                functionType = 'TIME_SERIES_DAILY';
-                break;
-            case 'weekly':
-                functionType = 'TIME_SERIES_WEEKLY';
-                break;
-            case 'monthly':
-                functionType = 'TIME_SERIES_MONTHLY';
-                break;
-            default:
-                functionType = 'TIME_SERIES_DAILY'; // Default to daily if no valid timeframe is provided
-                break;
+        if (!symbol || !timeframe) {
+            stockDataDiv.innerHTML = '<p>Please enter a valid stock symbol and select a timeframe.</p>';
+            return;
         }
     
-        fetch(`https://www.alphavantage.co/query?function=${functionType}&symbol=${symbol}&apikey=OVE6GTNI4ND6VWAT${additionalParams}`)
+        stockDataDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+        let endpoint = '';
+        switch (timeframe) {
+            case 'intraday':
+            case 'daily':
+            case 'weekly':
+            case 'monthly':
+                endpoint = `/api/stock/basic?symbol=${symbol}&timeframe=${timeframe}`;
+                break;
+            case 'sustainability':
+                endpoint = `/api/stock/sustainability?symbol=${symbol}`;
+                break;
+            case 'sentiment':
+                endpoint = `/api/stock/sentiment?symbol=${symbol}`;
+                break;
+            case 'ratios':
+                endpoint = `/api/stock/ratios?symbol=${symbol}`;
+                break;
+            default:
+                endpoint = `/api/stock/basic?symbol=${symbol}&timeframe=daily`; // Default to daily
+                break;
+        }
+
+        fetch(endpoint)
             .then(response => response.json())
             .then(data => {
+                if (data['Error Message'] || data.Note) {
+                    stockDataDiv.innerHTML = `<p>Error: ${data['Error Message'] || 'API rate limit reached.'}</p>`;
+                    return;
+                }
                 displayStockData(data, timeframe);
             })
             .catch(error => {
@@ -66,11 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 stockDataDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error fetching stock data';
             });
     }
-    
 
+    // Display stock data based on the response
     function displayStockData(data, timeframe) {
         let timeSeriesKey = '';
-        
         switch (timeframe) {
             case 'intraday':
                 timeSeriesKey = 'Time Series (5min)';
@@ -84,21 +95,38 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'monthly':
                 timeSeriesKey = 'Monthly Time Series';
                 break;
+            case 'sustainability':
+                stockDataDiv.innerHTML = `<h2>${data.symbol} - Sustainability</h2>
+                    <p>ESG Score: ${data.esg_score}</p>
+                    <p>Environmental Score: ${data.environmental}</p>
+                    <p>Social Score: ${data.social}</p>
+                    <p>Governance Score: ${data.governance}</p>`;
+                return;
+            case 'sentiment':
+                stockDataDiv.innerHTML = `<h2>${data.symbol} - Sentiment</h2>
+                    <p>RSI: ${data.rsi}</p>
+                    <p>Beta: ${data.beta}</p>`;
+                return;
+            case 'ratios':
+                stockDataDiv.innerHTML = `<h2>${data.symbol} - Financial Ratios</h2>
+                    <p>P/E Ratio: ${data.pe_ratio}</p>
+                    <p>P/B Ratio: ${data.pb_ratio}</p>
+                    <p>Dividend Yield: ${data.dividend_yield}</p>`;
+                return;
             default:
-                timeSeriesKey = 'Time Series (Daily)'; // Default to daily
+                timeSeriesKey = 'Time Series (Daily)';
                 break;
         }
-    
-        const timeSeries = data[timeSeriesKey];
         
+        const timeSeries = data[timeSeriesKey];
         if (!timeSeries) {
             stockDataDiv.innerHTML = '<p>Error: Data not available for the selected timeframe.</p>';
             return;
         }
-        
+
         const latestDate = Object.keys(timeSeries)[0];
         const latestData = timeSeries[latestDate];
-    
+
         stockDataDiv.innerHTML = `
             <h2>${data['Meta Data']['2. Symbol']} - ${getTimeframeText(timeframe)}</h2>
             <p>Last Refreshed: ${data['Meta Data']['3. Last Refreshed']}</p>
@@ -109,24 +137,17 @@ document.addEventListener('DOMContentLoaded', () => {
             <p>Volume: ${latestData['5. volume']}</p>
         `;
     }
-    
 
-    function getTimeSeriesKey(timeframe) {
-        switch (timeframe) {
-            case 'intraday': return '5min';
-            case 'daily': return 'Daily';
-            case 'weekly': return 'Weekly';
-            case 'monthly': return 'Monthly';
-            default: return 'Daily';
-        }
-    }
-
+    // Function to map timeframe to text
     function getTimeframeText(timeframe) {
         switch (timeframe) {
             case 'intraday': return 'Intraday (5min)';
             case 'daily': return 'Daily';
             case 'weekly': return 'Weekly';
             case 'monthly': return 'Monthly';
+            case 'sustainability': return 'Sustainability';
+            case 'sentiment': return 'Sentiment';
+            case 'ratios': return 'Financial Ratios';
             default: return 'Daily';
         }
     }

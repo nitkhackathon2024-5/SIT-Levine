@@ -2,19 +2,12 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 
-// Mock stock data
+// Mock stock data for sustainability, sentiment, and ratios
 const stockData = {
     AAPL: {
-        basic: {
-            symbol: 'AAPL',
-            companyName: 'Apple Inc.',
-            price: 150.25,
-            change: 2.75,
-            changePercent: 1.86
-        },
         sustainability: {
-            environmentalScore: 82,
-            socialScore: 75,
+            environmentalScore: 85,
+            socialScore: 78,
             governanceScore: 90
         },
         sentiment: {
@@ -27,13 +20,6 @@ const stockData = {
         }
     },
     GOOGL: {
-        basic: {
-            symbol: 'GOOGL',
-            companyName: 'Alphabet Inc.',
-            price: 2750.80,
-            change: -15.20,
-            changePercent: -0.55
-        },
         sustainability: {
             environmentalScore: 78,
             socialScore: 80,
@@ -83,14 +69,23 @@ router.get('/stock', async (req, res) => {
     }
 });
 
-// Route to get basic stock info from mock data
-router.get('/stock/basic', (req, res) => {
+// Route to get basic stock info (real-time) from Alpha Vantage API
+router.get('/stock/basic', async (req, res) => {
+    const { symbol } = req.query;
     try {
-        const { symbol } = req.query;
-        const data = getMockStockData(symbol, 'basic');
-        res.json(data);
+        const response = await axios.get(`https://www.alphavantage.co/query`, {
+            params: {
+                function: 'TIME_SERIES_DAILY',
+                symbol: symbol,
+                apikey: process.env.ALPHA_VANTAGE_API_KEY
+            }
+        });
+
+        const stockData = response.data;
+        res.json(stockData); // Adapt to return only relevant basic info
     } catch (error) {
-        res.status(404).json({ error: error.message });
+        console.error('Error fetching basic stock data:', error);
+        res.status(500).json({ message: 'Error fetching basic stock data' });
     }
 });
 
