@@ -1,0 +1,33 @@
+{
+  "name": "equity-analysis-app",
+  "version": "1.0.0",
+  "description": "A real-time equity analysis web application",
+  "main": "server.js",
+  "scripts": {
+    "test": "equity, analysis, real-time, sustainability"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suraj-bm/code.git"
+  },
+  "keywords": [
+    "equity",
+    "analysis",
+    "real-time",
+    "sustainability"
+  ],
+  "author": "Suraj",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/suraj-bm/code/issues"
+  },
+  "homepage": "https://github.com/suraj-bm/code#readme",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "mongodb": "^6.9.0",
+    "mongoose": "^8.7.2"
+  }
+}

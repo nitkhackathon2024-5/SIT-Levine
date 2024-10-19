@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Equity Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-chart-line"></i> Real-Time Stock Data</h1>
+        <form id="stockForm">
+            <label for="symbol">Enter Stock Symbol:</label>
+            <input type="text" id="symbol" name="symbol" required>
+            <button type="submit"><i class="fas fa-search"></i> Get Data</button>
+        </form>
+
+        <div class="time-options">
+            <button id="intraday" class="time-button" onclick="fetchStockData('INTRADAY')"><i class="fas fa-clock"></i> Intraday</button>
+            <button id="daily" class="time-button" onclick="fetchStockData('DAILY')"><i class="fas fa-calendar-day"></i> Daily</button>
+            <button id="weekly" class="time-button" onclick="fetchStockData('WEEKLY')"><i class="fas fa-calendar-week"></i> Weekly</button>
+            <button id="monthly" class="time-button" onclick="fetchStockData('MONTHLY')"><i class="fas fa-calendar-alt"></i> Monthly</button>
+        </div>
+
+        <div id="stockData" class="stock-data"></div>
+
+        <button id="clearData" class="clear-button"><i class="fas fa-trash-alt"></i> Clear Data</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
