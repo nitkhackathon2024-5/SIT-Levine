@@ -1,6 +1,6 @@
 ## Srinivas Institute of Technology Mangaluru(SIT) - Levine
-1.Yashmitha A
-2.Suraj
+1.Yashmitha A <br/>
+2.Suraj <br/>
 3.Amrutha
 
 ## 4. Theme: Improving Banking, Integrated apps
